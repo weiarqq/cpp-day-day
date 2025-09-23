@@ -1,0 +1,11 @@
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 4
+UseTab: false
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: false
+ColumnLimit: 80
+SpacesBeforeTrailingComments: 1
+IndentCaseLabels: false
+PointerBindsToType: true
+Standard: c++17
