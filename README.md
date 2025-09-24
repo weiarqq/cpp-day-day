@@ -616,7 +616,7 @@ public:
   } 
   
   string setCount() const{															// 常函数
-    // this->name = "weah"; 														// 常量成员函数不能修复成员变量
+    // this->name = "weah"; 														// 常量成员函数不能修改成员变量
     count++; 																						// mutable 修饰变量可以在常函数中进行修改
   }
   
@@ -836,6 +836,81 @@ int main() {
 ```
 
 
+
+#### 纯虚函数和抽象类
+
+纯虚函数定义：
+
+```c++
+virtual 返回类型 函数名()=0;
+```
+
+ **抽象类**:包含纯虚函数的类，称为抽象类，抽象类不能实例化，必须被继承；
+
+```c++
+// 纯虚函数和抽象类
+
+#include <iostream>
+using namespace std;
+
+class Animal {
+public:
+  virtual void
+  eat() = 0; // 设置 =0 则为纯虚函数, 此时继承的话 子类必须重写，不重写的话
+             // 子类也会成为抽象类,
+             // 包含纯虚函数的类，称为抽象类，抽象类不能实例化，必须被继承；
+  void dink() {}
+};
+
+class Cat : public Animal {
+public:
+  string name;
+  void eat() { cout << "猫吃东西" << endl; }
+};
+
+int main() {
+  Cat cat;
+  cat.eat();
+
+  return 0;
+}
+```
+
+
+
+#### 虚析构函数和纯虚析构函数
+
+> 纯虚析构函数，此时BaseA变为抽象类, 并且需要在**类外实现**;虚析构函数，若为多态时，释放内存时会执行子类和父类的虚构函数
+
+```c++
+// 虚析构函数和纯虚析构函数
+#include <iostream>
+using namespace std;
+
+class BaseA {
+public:
+  BaseA() {}
+  //   ~BaseA() { cout << "父类析构函数执行" << endl; }
+  //   virtual ~BaseA() { cout << "父类析构函数执行" << endl; } //
+  //   虚析构函数，此时多态时，释放内存时会执行子类和父类的虚构函数
+  virtual ~BaseA() = 0; // 纯虚析构函数，此时BaseA变为抽象类, 并且需要在类外实现
+};
+
+BaseA::~BaseA() { cout << "父类纯虚析构函数执行" << endl; }
+
+class BaseB : public BaseA {
+public:
+  BaseB() {}
+  ~BaseB() { cout << "子类析构函数执行" << endl; }
+};
+
+int main() {
+  //   BaseA *a = new BaseB();
+  //   delete a;
+  BaseB b;
+  return 0;
+}
+```
 
 
 
@@ -1142,7 +1217,344 @@ int main() {
 
 
 
+### 模版
+
+#### 函数模版
+
+**函数模版定义**：
+
+```c++
+template<typename T, typename T2, ...>
+返回类型 函数名称(T& t){};
+```
+
+**函数模板的工作原理** 
+
+1. **模板定义**：编译器看到 `template <typename T>` 时，会将其视为 "函数蓝图"，不会立即生成具体代码。
+2. **类型推导与实例化**：当调用模板函数时（如 `swapValues(x, y)`），编译器会：
+   - 根据传入的参数类型自动推导出 `T` 的具体类型（如 `int`）
+   - 生成该类型的具体函数（如 `void swapValues(int& a, int& b)`）
+3. **编译检查**：对每个实例化的函数进行类型检查，确保操作对该类型有效（如 `T` 必须支持赋值操作）
+
+**注意事项**：
+
+- 模板定义通常需要放在头文件中（因为编译器需要在调用处看到完整定义才能实例化）。
+- 模版默认无法进行隐式转换，比如int->double，但当使用显示指定类型时，可以进行隐式类型转换 add<int>(int, double)
+- 当普通函数和模版函数同名时，优先调用普通函数，当显示指定类型，或者添加<>可以强制调用函数模版，例如：add<>
+- 需要发生隐式类型转换时，优先使用模版，发生隐式转换时，普通函数不是最优先匹配
 
 
-#### 继承
+
+```c++
+// 函数模板
+#include <iostream>
+using namespace std;
+
+/*
+template<typename T, typename T2, typename T3>
+函数的定义
+
+模版默认无法进行隐式转换，比如int->double
+当使用显示指定类型时，可以进行隐式类型转换 add<int>(int, double)
+
+函数模版支持多个类型参数
+一旦类型不能推导，则会导致编译报错
+返回值类型无法作为推导依据， 即返回值类型不能单独作为typename
+
+1. 当普通函数和模版函数同名时，优先调用普通函数,
+ 1.1 当显示指定类型，或者添加<>可以强制调用函数模版，add<>
+ 1.2
+需要发生隐式类型转换时，优先使用模版，发生隐式转换时，普通函数不是最优先匹配
+*/
+
+template <typename T> T addInt(T a, T b) {
+  cout << "函数模版" << endl;
+  return a + b;
+}
+int addInt(int a, int b) {
+  cout << "普通函数" << endl;
+  return a + b;
+}
+
+template <typename T1, typename T2> T2 add2(T1 a, T2 b) { return a + b; } //多参数
+
+int main() {
+  double a = 10;
+  double b = 1.1;
+  int d = 10;
+  int aaa = addInt(5, 6);
+  double c = addInt(a, b);
+  double cc = addInt<double>(a, b);
+  int ccc = addInt<int>(a, d);
+  cout << c << endl;
+  cout << cc << endl;
+  cout << ccc << endl;
+  double xx = add2(1, 1.1);
+  cout << xx << endl;
+
+  return 0;
+}
+```
+
+
+
+#### 类模版
+
+**类模版定义**：
+
+```c++
+类模板
+template <class T>         //class替换为typename也可
+class 类名{
+};
+```
+
+**注意事项**:
+
+- 类模板实例化时，必须显示指定类型
+- 类模板的成员函数，在调用时才会生成；
+
+```c++
+#include <iostream>
+#include <vector>
+using namespace std;
+
+/*
+类模板
+template <class T>         class替换为typename也可
+class 类名{
+};
+
+类模板实例化时，必须显示指定类型
+
+创建时机
+类模板的成员函数，在调用时才会生成；
+
+*/
+
+// 类内实现
+template <class T> class DynamicArray {
+private:
+  T *elements;
+  int size;
+
+public:
+  DynamicArray() : size(100) { elements = new T[size]; }
+  DynamicArray(int size) { elements = new T[size]; }
+
+  ~DynamicArray() { delete[] elements; }
+
+  T &operator[](int index) { return elements[index]; }
+
+  void update(int index, T value) { elements[index] = value; }
+};
+
+//类外实现
+template <class T> class DynamicArrayN {
+private:
+  T *elements;
+  int size;
+
+public:
+  DynamicArrayN(int n);
+  ~DynamicArrayN();
+  T &operator[](int index);
+  void update(int index, T value);
+};
+template <class T> DynamicArrayN<T>::DynamicArrayN(int n) : size(n) {
+  elements = new T[n];
+}
+
+template <class T> DynamicArrayN<T>::~DynamicArrayN<T>() { delete[] elements; }
+
+template <class T> T &DynamicArrayN<T>::operator[](int index) {
+  return elements[index];
+}
+
+template <class T> void DynamicArrayN<T>::update(int index, T value) {
+  elements[index] = value;
+}
+
+//类模板实例化的对象作为入参时
+template <class Value1, class Value2> class TempClass {
+private:
+  Value1 value1;
+  Value2 value2;
+
+public:
+  TempClass(Value1 value1, Value2 value2) {
+    this->value1 = value1;
+    this->value2 = value2;
+  }
+};
+//当需要把TempClass作为函数参数类型时，有如下三种方法实现
+
+//直接指定类型
+void test1(TempClass<string, int> &t) {}
+
+// 参数模板化
+template <typename Value1, typename Value2>
+void test2(TempClass<Value1, Value2> &t) {}
+
+// 类模版化
+template <typename T> void test3(T &t) {}
+
+template <class T1, class T2, class T3>
+class TempClassLow : public TempClass<T1, T2> {
+  T3 t3;
+};
+
+int main() {
+  int n = 10;
+  int a[n];            // 标准C++中是 不允许的
+  int *p = new int[n]; //可以使用这种方式
+
+  DynamicArrayN<double> array(100); // 必须显示指定 比如vector<int>
+  array[10] = 10.1;
+  array.update(9, 9.01);
+  cout << array[10] << " " << array[9] << endl;
+
+  TempClass<string, int> tc("wangqi", 30);
+  test1(tc);
+  test2(tc);
+  test3(tc);
+  return 0;
+}
+```
+
+
+
+#### 模版特化
+
+C++ 中的**模板特化（Template Specialization）** 是泛型编程的重要补充，允许为特定类型或特定参数组合定制模板的实现。当通用模板无法满足某些类型的特殊需求时，特化机制能提供更精准、高效或正确的实现。
+
+**模板特化的分类**
+
+模板特化分为**函数模板特化**和**类模板特化**，每种又可细分为**全特化**和**偏特化**（类模板专属）。
+
+1. 函数模板特化（仅支持全特化）
+
+函数模板特化是为**特定类型**完全重写模板函数的实现，语法如下：
+
+```cpp
+// 通用模板
+template <typename T>
+返回类型 函数名(参数列表) {
+    // 通用实现
+}
+
+// 全特化：为特定类型T=Type定制实现
+template <>
+返回类型 函数名<Type>(参数列表) {
+    // 针对Type的特化实现
+}
+```
+
+**示例**：为字符串指针特化比较函数
+```cpp
+#include <cstring>
+#include <iostream>
+using namespace std;
+
+// 通用模板：比较两个值
+template <typename T>
+bool isEqual(T a, T b) {
+    return a == b; // 对指针会比较地址（非内容）
+}
+
+// 全特化：针对const char*（字符串）
+template <>
+bool isEqual<const char*>(const char* a, const char* b) {
+    return strcmp(a, b) == 0; // 比较字符串内容
+}
+
+int main() {
+    cout << isEqual(5, 5) << endl;               // 1（正确）
+    cout << isEqual("hello", "hello") << endl;   // 1（特化后正确比较内容）
+    return 0;
+}
+```
+
+2. 类模板特化
+
+类模板特化更灵活，支持**全特化**和**偏特化**（部分参数固定）。
+
+（1）类模板全特化
+
+为**所有模板参数**指定具体类型，完全重写类的实现：
+
+```cpp
+// 通用类模板
+template <typename T1, typename T2>
+class MyClass {
+public:
+    void print() { cout << "通用版本" << endl; }
+};
+
+// 全特化：T1=int, T2=double
+template <>
+class MyClass<int, double> {
+public:
+    void print() { cout << "特化版本：int, double" << endl; }
+};
+
+// 使用
+MyClass<char, float> obj1;
+obj1.print(); // 输出：通用版本
+
+MyClass<int, double> obj2;
+obj2.print(); // 输出：特化版本：int, double
+```
+
+（2）类模板偏特化
+
+只固定**部分模板参数**，其余仍保持泛型（仅类模板支持）：
+
+```cpp
+// 通用模板：两个类型参数
+template <typename T1, typename T2>
+class Pair {
+public:
+    void show() { cout << "通用 Pair: T1, T2" << endl; }
+};
+
+// 偏特化1：固定T2为int
+template <typename T1>
+class Pair<T1, int> {
+public:
+    void show() { cout << "偏特化: T1, int" << endl; }
+};
+
+// 偏特化2：两个参数都为指针类型
+template <typename T1, typename T2>
+class Pair<T1*, T2*> {
+public:
+    void show() { cout << "偏特化: T1*, T2*" << endl; }
+};
+
+// 使用
+Pair<double, string> p1;  // 通用版本
+p1.show();
+
+Pair<string, int> p2;     // 偏特化1
+p2.show();
+
+Pair<int*, double*> p3;   // 偏特化2
+p3.show();
+```
+
+模板特化的核心意义
+
+1. **处理特殊类型**：通用模板逻辑可能对某些类型（如指针、bool、自定义类）不适用，特化可修正行为。
+2. **性能优化**：为高频使用的类型（如int、double）提供更高效的实现（如用快速排序替代通用排序）。
+3. **语义适配**：针对类型特性定制逻辑（如`std::vector<bool>`特化为位存储，节省空间）。
+
+注意事项
+
+- **函数模板不支持偏特化**：若需类似功能，可通过函数重载替代。
+- **特化版本需独立实现**：特化类/函数的成员需重新定义，不继承通用模板的实现。
+- **特化优先级**：编译器会优先选择最匹配的特化版本，其次是通用模板。
+
+
+模板特化是C++泛型编程的“灵活调节阀”，既保持了通用模板的复用性，又能为特殊场景提供精准控制，是标准库（如STL）实现高效、通用功能的核心技术之一。
 

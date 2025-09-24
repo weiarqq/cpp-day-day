@@ -20,29 +20,48 @@ template<typename T, typename T2, typename T3>
 */
 
 template <typename T> T addInt(T a, T b) {
-  cout << "函数模版" << endl;
-  return a + b;
+    cout << "函数模版" << endl;
+    return a + b;
 }
 int addInt(int a, int b) {
-  cout << "普通函数" << endl;
-  return a + b;
+    cout << "普通函数" << endl;
+    return a + b;
 }
 
-template <typename T1, typename T2> T2 add2(T1 a, T2 b) { return a + b; } //多参数
+// 通用模板：比较两个值
+template <typename T> T addTemp(T a, T b) {
+    return a + b; // 对指针会比较地址（非内容）
+}
+
+// 全特化：针对const char*（字符串）
+template <> std::string addTemp<std::string>(std::string a, std::string b) {
+    return a + b; // 比较字符串内容
+}
+
+template <typename T1, typename T2> T2 add2(T1 a, T2 b) {
+    return a + b;
+} // 多参数
 
 int main() {
-  double a = 10;
-  double b = 1.1;
-  int d = 10;
-  int aaa = addInt(5, 6);
-  double c = addInt(a, b);
-  double cc = addInt<double>(a, b);
-  int ccc = addInt<int>(a, d);
-  cout << c << endl;
-  cout << cc << endl;
-  cout << ccc << endl;
-  double xx = add2(1, 1.1);
-  cout << xx << endl;
+    double a = 10;
+    double b = 1.1;
+    int d = 10;
+    int aaa = addInt(5, 6);
+    double c = addInt(a, b);
+    double cc = addInt<double>(a, b);
+    int ccc = addInt<int>(a, d);
+    cout << c << endl;
+    cout << cc << endl;
+    cout << ccc << endl;
 
-  return 0;
+    // string sss = addInt("hello", " world");
+    double xx = add2(1, 1.1);
+    cout << xx << endl;
+    cout << addTemp(5, 5) << endl; // 1（正确）
+    std::string sa = "hello ";
+    std::string sb = "world";
+    const char* sc = "hello world";
+    cout << addTemp(sa, sb) << endl; // 1（特化后正确比较内容）
+    std::string sss;
+    return 0;
 }
