@@ -1,4 +1,7 @@
+// STL 容器
+#include <array>
 #include <deque>
+#include <forward_list>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -20,43 +23,41 @@ void printVector(vector<int>& v) {
 }
 
 int main() {
-    // std::vector veci = {1, 2, 3, 4, 5};
-    std::vector<int> vec;
-    vec.push_back(2);
-    vec.push_back(0);
-    int a = vec.at(0);
 
-    // vector<int> v3(v);
-    // vector<int> v4(v.begin(), v.end());
-    // vector<int> v5(0);
-    // vector<int> v6(0, 8);
-
-    // cout << "begin->" << *v.begin() << endl;   // 迭代器取首位指针
-    // cout << "end->" << *(v.end() - 1) << endl; // 迭代器取末尾指针
-
-    // cout << "front:" << v.front() << endl; // 取首位
-    // cout << "back:" << v.back() << endl;   // 取末尾
-    // printVector(v);
-
-    std::string str;
-
-    std::deque<int> deq;
-
-    std::stack<int> sta;
-
-    std::queue<int> que;
+    // 序列容器
+    std::vector<int> vector; // 动态数组 数组大小可动态调整，连续内存数组
 
     std::list<int> list;
 
+    std::deque<int> deque;
+
+    std::array<int, 5> array;
+
+    std::forward_list<int> forward_list;
+
+    // 关联容器
     std::set<int> set;
 
-    std::map<int, string> map;
-
-    std::priority_queue<int> pri_que;
+    std::multiset<int> multiset;
 
     std::unordered_set<int> un_set;
 
+    std::unordered_multiset<int> unordered_multiset;
+
+    std::map<int, string> map;
+
+    std::multimap<int, string> multimap;
+
     std::unordered_map<int, string> un_map;
+
+    std::unordered_multimap<int, string> unordered_multimap;
+
+    // 适配器容器
+    std::stack<int> stack;
+
+    std::queue<int> queue;
+
+    std::priority_queue<int> pri_que;
 
     return 0;
 };
