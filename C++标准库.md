@@ -303,9 +303,9 @@ C++的IO流库用面向对象的方式封装了输入输出，核心是`istream`
 | 函数/类成员                        | 说明                                   | 示例                                                    |
 | ---------------------------------- | -------------------------------------- | ------------------------------------------------------- |
 | **`std::thread t(func, args...)`** | 创建线程对象并执行函数 `func(args...)` | `std::thread t(foo, 42);`                               |
-| **`join()`**                         | 阻塞等待线程完成                       | `t.join();`                                             |
-| **`detach()`**                    | 线程分离，不再由当前线程管理           | `t.detach();`                                           |
-| `t.joinable()`                     | 判断线程是否可 join/detach             | `if (t.joinable())`                                     |
+| **`join()`**                         | 阻塞等待线程完成，等待启动的线程完成，才会继续往下执行。   | `t.join();`                                            |
+| **`detach()`**                    | 线程分离，不再由当前线程管理，若主线程结束，则程序结束，不等待detach线程结束 | `t.detach();`                                           |
+| `t.joinable()`                     | 判断一个线程是否可 join()/detach() | `if (t.joinable())`                                     |
 | `std::this_thread::sleep_for(dur)` | 让当前线程休眠一段时间                 | `std::this_thread::sleep_for(std::chrono::seconds(1));` |
 | `std::this_thread::yield()`        | 主动让出 CPU 时间片                    | `std::this_thread::yield();`                            |
 | `std::this_thread::get_id()`       | 获取当前线程 ID                        | `auto id = std::this_thread::get_id();`                 |
@@ -371,3 +371,5 @@ C++的IO流库用面向对象的方式封装了输入输出，核心是`istream`
 | **`std::promise<T>`**                | 承诺在未来提供一个值        | `std::promise<int> prom; auto fut = prom.get_future();`      |
 | `std::call_once`                 | 确保某段代码只执行一次      | `std::once_flag flag; std::call_once(flag, init);`           |
 | `std::timed_mutex`               | 带超时的互斥锁              | `std::timed_mutex tmtx; tmtx.try_lock_for(std::chrono::seconds(1));` |
+
+https://mp.weixin.qq.com/s?__biz=MzkyODU5MTYxMA==&mid=2247492956&idx=1&sn=d81798b9ff18e6d8c6892945ef26661a&source=41&poc_token=HH5D6WijEz8S0426L2BmB3q0wXgc1HnK5RrE526v

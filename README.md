@@ -667,6 +667,196 @@ constexpr int result = sum(3, 4); // 编译期计算
 
 想了解如何在实际项目中有效利用`constexpr`提升性能和代码质量的具体案例吗？我可以提供一些更复杂的编译期计算示例。
 
+
+
+#### lambda
+
+> C++11 引入的一种**匿名函数对象**，可以在代码中直接定义，不需要单独写函数声明。  方便在需要的地方定义简短的函数，尤其适合配合 STL 算法和多线程使用。
+
+**基本语法**
+
+```cpp
+[capture](parameters) specifiers -> return_type { body }
+```
+
+各部分含义：
+- **capture**（捕获列表）：从外部作用域捕获变量（按值或按引用）
+- **parameters**（参数列表）：和普通函数参数一样
+- **specifiers**（限定符）：可选，例如 `mutable`、`noexcept`
+- **return_type**（返回类型）：可选，如果省略，编译器会自动推导（只有单 return 语句时）
+- **body**（函数体）：实际代码
+
+---
+
+**捕获列表**
+
+| 语法      | 含义                                             |
+| --------- | ------------------------------------------------ |
+| `[]`      | 不捕获任何外部变量                               |
+| `[x]`     | 按值捕获 x（副本）                               |
+| `[&x]`    | 按引用捕获 x（可修改外部变量）                   |
+| `[=]`     | 默认按值捕获用到的所有变量                       |
+| `[&]`     | 默认按引用捕获用到的所有变量                     |
+| `[=, &x]` | 默认按值捕获，但 x 按引用捕获                    |
+| `[&, x]`  | 默认按引用捕获，但 x 按值捕获                    |
+| `[this]`  | 捕获当前类的 this 指针（用于成员函数中访问成员） |
+
+**注意**：
+- 按值捕获的变量默认是 `const`，如果要修改，需要加 `mutable`
+- 捕获的变量必须在 lambda 定义时就存在
+- 引用捕获要确保变量生命周期足够长
+
+---
+
+**返回类型推导**
+- 如果 lambda 只有一个 `return` 语句，可省略返回类型，编译器会自动推导：
+  ```cpp
+  auto add = [](int a, int b) { return a + b; }; // 返回类型自动推导为 int
+  ```
+- 如果有多个 `return` 语句或返回类型复杂，需要显式指定：
+  ```cpp
+  auto func = [](int x) -> double {
+      if (x > 0) return 1.0;
+      else return 0.0;
+  };
+  ```
+
+---
+
+**mutable 关键字**
+按值捕获的变量默认是只读的，`mutable` 允许修改副本：
+```cpp
+int x = 10;
+auto func = [x]() mutable {
+    x++; // 修改的是副本，不影响外部 x
+    std::cout << x << std::endl;
+};
+func(); // 输出 11
+std::cout << x << std::endl; // 输出 10
+```
+
+---
+
+**STL使用**
+lambda 最常用的场景之一是作为算法的回调：
+```cpp
+#include <vector>
+#include <algorithm>
+#include <iostream>
+
+int main() {
+    std::vector<int> v = {1, 2, 3, 4, 5};
+    
+    // 查找第一个大于 2 的元素
+    auto it = std::find_if(v.begin(), v.end(), [](int x) {
+        return x > 2;
+    });
+    
+    if (it != v.end()) {
+        std::cout << "Found: " << *it << std::endl;
+    }
+}
+```
+
+---
+
+**多线程使用**
+lambda 非常适合作为线程任务：
+```cpp
+#include <thread>
+#include <iostream>
+
+int main() {
+    int counter = 0;
+    std::thread t([&counter]() {
+        for (int i = 0; i < 10000; ++i) {
+            counter++;
+        }
+    });
+    
+    t.join();
+    std::cout << counter << std::endl;
+}
+```
+> 注意：多线程共享变量需要加锁或使用原子变量保证线程安全
+
+---
+
+**捕获 `this`**
+```cpp
+#include <iostream>
+
+struct Foo {
+    int x = 10;
+    
+    void bar() {
+        // 捕获 this，访问成员变量
+        auto func = [this]() {
+            std::cout << x << std::endl;
+        };
+        func();
+    }
+};
+
+int main() {
+    Foo f;
+    f.bar(); // 输出 10
+}
+```
+
+---
+
+**C++14/17/20**
+- **C++14**：支持初始化捕获（init capture）
+  ```cpp
+  int x = 1;
+  auto lambda = [y = x + 1]() {
+      std::cout << y << std::endl;
+  };
+  ```
+- **C++14**：泛型 lambda（`auto` 参数）
+  ```cpp
+  auto add = [](auto a, auto b) { return a + b; };
+  ```
+- **C++17**：constexpr lambda
+  ```cpp
+  constexpr auto square = [](int x) { return x * x; };
+  constexpr int val = square(5); // 编译期计算
+  ```
+- **C++20**：模板 lambda
+  ```cpp
+  auto func = []<typename T>(T x) {
+      return x + 1;
+  };
+  ```
+
+---
+
+**lambda 底层原理**
+编译器会把 lambda 翻译成一个匿名的**函数对象**（functor），例如：
+```cpp
+auto lambda = [x](int y) { return x + y; };
+```
+会被编译器大致翻译为：
+```cpp
+struct __lambda_123 {
+    int x; // 按值捕获
+    __lambda_123(int x_) : x(x_) {}
+    int operator()(int y) const {
+        return x + y;
+    }
+};
+auto lambda = __lambda_123(x);
+```
+
+---
+
+**总结**
+- lambda 是匿名函数对象，方便就地定义
+- 捕获列表控制如何获取外部变量
+- 可与 STL 算法、多线程等无缝配合
+- 现代 C++ 中 lambda 功能越来越强大（泛型、constexpr、模板等）
+
 ### 类型转换
 
 C++ 提供了多种类型转换机制，从简单的隐式转换到严格控制的显式转换，下面我将系统介绍 C++ 中的类型转换方式。
