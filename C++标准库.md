@@ -372,4 +372,3 @@ C++的IO流库用面向对象的方式封装了输入输出，核心是`istream`
 | `std::call_once`                 | 确保某段代码只执行一次      | `std::once_flag flag; std::call_once(flag, init);`           |
 | `std::timed_mutex`               | 带超时的互斥锁              | `std::timed_mutex tmtx; tmtx.try_lock_for(std::chrono::seconds(1));` |
 
-https://mp.weixin.qq.com/s?__biz=MzkyODU5MTYxMA==&mid=2247492956&idx=1&sn=d81798b9ff18e6d8c6892945ef26661a&source=41&poc_token=HH5D6WijEz8S0426L2BmB3q0wXgc1HnK5RrE526v
